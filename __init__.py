@@ -68,7 +68,7 @@ class MNML_OT_ASCImporter(bpy.types.Operator, ImportHelper):
             verts = []
             with open(file, 'r') as f:
                 y = 0
-                mesh = bpy.data.meshes.new(name='ASC_' + os.path.basename(file.name))
+                mesh = bpy.data.meshes.new(name='ASC_' + os.path.basename(file))
                 for line in f:
                     component = line.split(' ')
                     if len(component) == 2:
@@ -99,7 +99,7 @@ class MNML_OT_ASCImporter(bpy.types.Operator, ImportHelper):
                 mesh.from_pydata(verts,[], faces)
                 mesh.update(calc_edges=True)
                 mesh.validate()
-                obj = bpy.data.objects.new('ASC_' + os.path.basename(file.name), mesh)
+                obj = bpy.data.objects.new('ASC_' + os.path.basename(file), mesh)
                 x = float(asc_definition['xllcorner'])
                 y = float(asc_definition['yllcorner'])
                 obj.location = (x, -y, 0)
