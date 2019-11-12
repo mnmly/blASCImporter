@@ -11,8 +11,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-# TODO: Investigate the y direction
-
 bl_info = {
     "name" : "blASCImporter",
     "author" : "Hiroaki Yamane",
@@ -63,20 +61,28 @@ class MNML_OT_ASCImporter(bpy.types.Operator, ImportHelper):
                 "NODATA_value": 0,
                 "byteorder":"LSBFIRST"
             }
-            ncols = -1
-            nrows = -1
             verts = []
             with open(file, 'r') as f:
                 y = 0
                 mesh = bpy.data.meshes.new(name='ASC_' + os.path.basename(file))
+                cellsize = 0
                 for line in f:
+                    line = re.sub(' +', ' ', line)
                     component = line.split(' ')
                     if len(component) == 2:
                         (name, value) = component
                         asc_definition[name] = int(value)
+                        if name == 'cellsize':
+                            cellsize = int(value)
                     else:
                         for (x, z) in enumerate(component):
-                            vert = (float(x * asc_definition['cellsize']), float(y * asc_definition['cellsize']), float(z))
+                            _x = float(x * cellsize)
+                            _y = float(-y * cellsize)
+                            if x == asc_definition['ncols'] - 1:
+                                _x += float(cellsize)
+                            if y == asc_definition['nrows'] - 1:
+                                _y -= float(cellsize)
+                            vert = (_x, _y, float(z))
                             verts.append(vert)
                         y += 1
                 count = 0
@@ -95,14 +101,13 @@ class MNML_OT_ASCImporter(bpy.types.Operator, ImportHelper):
                         count = count + 1
                     else:
                         count = 0
-
                 mesh.from_pydata(verts,[], faces)
                 mesh.update(calc_edges=True)
                 mesh.validate()
                 obj = bpy.data.objects.new('ASC_' + os.path.basename(file), mesh)
                 x = float(asc_definition['xllcorner'])
                 y = float(asc_definition['yllcorner'])
-                obj.location = (x, -y, 0)
+                obj.location = (x, y, 0)
                 scene = bpy.context.scene
                 scene.collection.objects.link(obj)
         return {"FINISHED"}
