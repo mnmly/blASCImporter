@@ -68,12 +68,12 @@ class MNML_OT_ASCImporter(bpy.types.Operator, ImportHelper):
                 cellsize = 0
                 for line in f:
                     line = re.sub(' +', ' ', line)
-                    component = line.split(' ')
+                    component = [c.strip('\n') for c in line.split(' ') if len(c.strip('\n')) > 0]
                     if len(component) == 2:
                         (name, value) = component
-                        asc_definition[name] = int(value)
+                        asc_definition[name] = float(value)
                         if name == 'cellsize':
-                            cellsize = int(value)
+                            cellsize = float(value)
                     else:
                         for (x, z) in enumerate(component):
                             _x = float(x * cellsize)
@@ -86,10 +86,10 @@ class MNML_OT_ASCImporter(bpy.types.Operator, ImportHelper):
                             verts.append(vert)
                         y += 1
                 count = 0
-                ncols = asc_definition['ncols']
-                nrows = asc_definition['nrows']
+                ncols = int(asc_definition['ncols'])
+                nrows = int(asc_definition['nrows'])
                 faces = []
-                for i in range (0, nrows * (ncols - 1)):
+                for i in range(0, nrows * (ncols - 1)):
                     if count < nrows - 1:
                         A = i
                         B = i + 1
